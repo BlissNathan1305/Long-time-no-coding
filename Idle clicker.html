@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idle Clicker Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #2193b0, #6dd5ed);
+            color: white;
+        }
+        .game-container {
+            margin-top: 50px;
+        }
+        button {
+            font-size: 20px;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            background-color: #ff9800;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" src="background.mp3" loop></audio>
+    <audio id="clickSound" src="click.mp3"></audio>
+
+    <div class="game-container">
+        <h1>Idle Clicker Game</h1>
+        <p>Coins: <span id="coinCount">0</span></p>
+        <button id="clickButton" onclick="earnCoins()">Click Me!</button>
+        <button id="upgradeButton" onclick="buyUpgrade()">Buy Upgrade (50 Coins)</button>
+    </div>
+
+    <script>
+        let coins = 0;
+        let autoCoins = 0;
+
+        /* Play background music */
+        window.onload = function() {
+            document.getElementById("bgMusic").play();
+        };
+
+        /* Function to earn coins */
+        function earnCoins() {
+            coins += 1;
+            document.getElementById("coinCount").innerText = coins;
+            document.getElementById("clickSound").play();
+        }
+
+        /* Upgrade System */
+        function buyUpgrade() {
+            if (coins >= 50) {
+                coins -= 50;
+                autoCoins += 1;
+                setInterval(() => {
+                    coins += autoCoins;
+                    document.getElementById("coinCount").innerText = coins;
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
