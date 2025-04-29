@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Scramble Game</title>
+    <style>
+        :root {
+            --primary-color: #007bff; /* Blue */
+            --secondary-color: #6c757d; /* Gray */
+            --success-color: #28a745; /* Green */
+            --danger-color: #dc3545; /* Red */
+            --warning-color: #ffc107; /* Yellow */
+            --light-bg: #f8f9fa;
+            --dark-text: #343a40;
+            --light-text: #fff;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            margin: 0;
+            padding: 15px; /* Add padding for smaller screens */
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #game-container {
+            background-color: var(--light-text);
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%; /* Responsive width */
+            max-width: 450px;
+            border: 1px solid var(--border-color);
+            overflow: hidden; /* Contain animations */
+        }
+
+        h1 {
+            margin-top: 0;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        #scrambled-word {
+            font-size: 2.5em; /* Slightly smaller */
+            font-weight: 600; /* Semibold */
+            letter-spacing: 6px;
+            margin: 20px 0;
+            color: var(--dark-text);
+            padding: 15px;
+            background-color: #e9ecef; /* Light gray background */
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease;
+            font-family: 'Courier New', Courier, monospace; /* Monospace for letters */
+        }
+
+        #guess-input {
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 10px;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            text-align: center;
+            text-transform: uppercase; /* Match scrambled display */
+        }
+
+        #guess-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .button-container {
+            display: grid; /* Use grid for better spacing control */
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .game-button {
+            padding: 10px 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            color: var(--light-text);
+            font-weight: 500;
+        }
+
+        #submit-guess {
+            background-color: var(--primary-color);
+        }
+        #submit-guess:hover {
+            background-color: #0056b3; /* Darker blue */
+        }
+
+        #skip-word {
+            background-color: var(--secondary-color);
+        }
+        #skip-word:hover {
+            background-color: #5a6268; /* Darker gray */
+        }
+
+        .game-button:active {
+            transform: scale(0.97);
+        }
+
+        #feedback {
+            min-height: 22px; /* Prevent layout shifts */
+            margin-top: 15px;
+            font-size: 1em;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        #feedback.correct {
+            color: var(--success-color);
+        }
+
+        #feedback.incorrect {
+            color: var(--danger-color);
+        }
+
+        #score-display {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: var(--secondary-color);
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        #score {
+            font-weight: bold;
+            color: var(--dark-text);
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-7px); } /* Slightly less shake */
+            20%, 40%, 60%, 80% { transform: translateX(7px); }
+        }
+
+        .shake-anim {
+            animation: shake 0.45s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.06); } /* Slightly less pulse */
+            100% { transform: scale(1); }
+        }
+
+        .pulse-anim {
+            animation: pulse 0.35s ease-out;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Word Scramble!</h1>
+
+        <div id="scrambled-word">LOADING...</div>
+
+        <input type="text" id="guess-input" placeholder="Enter your guess" autocomplete="off">
+
+        <div class="button-container">
+            <button id="submit-guess" class="game-button">Guess</button>
+            <button id="skip-word" class="game-button">Skip</button>
+        </div>
+
+        <p id="feedback"></p>
+
+        <div id="score-display">Score: <span id="score">0</span></div>
+    </div>
+
+    <script>
+        const wordList = [
+            "JAVASCRIPT", "HTML", "PYTHON", "STYLE", "ARRAY", "OBJECT", "FUNCTION",
+            "VARIABLE", "CONSTANT", "ELEMENT", "BROWSER", "NETWORK", "DATABASE",
+            "ALGORITHM", "INTERFACE", "FRAMEWORK", "LIBRARY", "COMPONENT", "MODULE",
+            "TERMINAL", "CONSOLE", "DEBUGGER", "INTEGER", "STRING", "BOOLEAN", "EVENT",
+            "LISTENER", "CALLBACK", "PROMISE", "ASYNC", "AWAIT", "NODEJS", "REACT",
+            "ANGULAR", "VUEJS", "SVELTE", "QUERY", "SELECTOR", "ATTRIBUTE", "CLASS"
+        ];
+
+        let currentWord = '';
+        let score = 0;
+        let previousWord = ''; // To avoid picking the same word twice
+
+        // DOM Elements
+        const scrambledWordEl = document.getElementById('scrambled-word');
+        const guessInputEl = document.getElementById('guess-input');
+        const feedbackEl = document.getElementById('feedback');
+        const scoreEl = document.getElementById('score');
+        const submitBtn = document.getElementById('submit-guess');
+        const skipBtn = document.getElementById('skip-word');
+        const gameContainerEl = document.getElementById('game-container'); // For shake animation
+
+        // --- Functions ---
+
+        function getRandomWord() {
+            let newWord = '';
+            if (wordList.length < 2) return wordList[0] || ''; // Handle very small lists
+            do {
+                const randomIndex = Math.floor(Math.random() * wordList.length);
+                newWord = wordList[randomIndex];
+            } while (newWord === previousWord); // Keep trying until a different word is found
+            previousWord = newWord;
+            return newWord;
+        }
+
+        function scrambleWord(word) {
+            const letters = word.split('');
+            let scrambled = '';
+            // Fisher-Yates (Knuth) Shuffle Algorithm + ensure not same as original
+            do {
+                for (let i = letters.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [letters[i], letters[j]] = [letters[j], letters[i]]; // Swap
+                }
+                scrambled = letters.join('');
+            } while (scrambled === word && word.length > 1); // Re-scramble if it's the same (and word isn't just 1 letter)
+            return scrambled;
+        }
+
+        function displayNewWord() {
+            currentWord = getRandomWord();
+            if (!currentWord) {
+                scrambledWordEl.textContent = "NO WORDS!";
+                feedbackEl.textContent = "Add more words to the list.";
+                submitBtn.disabled = true;
+                skipBtn.disabled = true;
+                guessInputEl.disabled = true;
+                return;
+            }
+            const scrambled = scrambleWord(currentWord);
+
+            scrambledWordEl.textContent = scrambled;
+            guessInputEl.value = '';
+            feedbackEl.textContent = '';
+            feedbackEl.className = ''; // Clear feedback styling
+            guessInputEl.disabled = false;
+            submitBtn.disabled = false;
+            skipBtn.disabled = false;
+            guessInputEl.focus(); // Focus the input field
+        }
+
+        function triggerAnimation(element, animationClass) {
+            element.classList.add(animationClass);
+            // Remove the class after the animation completes
+            element.addEventListener('animationend', () => {
+                element.classList.remove(animationClass);
+            }, { once: true }); // Important: Use { once: true }
+        }
+
+
+        function checkGuess() {
+            const userGuess = guessInputEl.value.trim().toUpperCase();
+
+            if (!userGuess) {
+                feedbackEl.textContent = "Please enter a guess.";
+                feedbackEl.className = 'incorrect'; // Style as incorrect
+                triggerAnimation(gameContainerEl, 'shake-anim');
+                return; // Don't proceed if input is empty
+            }
+
+            if (userGuess === currentWord) {
+                // Correct Guess
+                score++;
+                scoreEl.textContent = score;
+                feedbackEl.textContent = "Correct!";
+                feedbackEl.className = 'correct';
+                triggerAnimation(scrambledWordEl, 'pulse-anim');
+
+                // Disable input/buttons briefly before loading next word
+                guessInputEl.disabled = true;
+                submitBtn.disabled = true;
+                skipBtn.disabled = true;
+
+                setTimeout(displayNewWord, 800); // Load next word after a short delay
+
+            } else {
+                // Incorrect Guess
+                feedbackEl.textContent = "Try again!";
+                feedbackEl.className = 'incorrect';
+                triggerAnimation(gameContainerEl, 'shake-anim'); // Shake the container
+                guessInputEl.select(); // Select the incorrect text for easy re-typing
+            }
+        }
+
+        // --- Event Listeners ---
+
+        submitBtn.addEventListener('click', checkGuess);
+        skipBtn.addEventListener('click', displayNewWord);
+
+        // Allow submitting with Enter key
+        guessInputEl.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default form submission if it were in a form
+                checkGuess();
+            }
+        });
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', displayNewWord); // Start game when page is loaded
+
+    </script>
+
+</body>
+</html>

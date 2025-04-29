@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Puzzle Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            margin: 50px auto;
+            width: 300px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        p, input {
+            font-size: 18px;
+        }
+        input {
+            padding: 5px;
+            width: 80%;
+            margin: 10px;
+        }
+        button {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        @keyframes correctAnimation {
+            0% { color: green; }
+            50% { color: yellow; }
+            100% { color: green; }
+        }
+        @keyframes wrongAnimation {
+            0% { color: red; }
+            50% { color: black; }
+            100% { color: red; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Word Puzzle Game</h1>
+        <p id="scrambled-word"></p>
+        <input type="text" id="user-input" placeholder="Guess the word...">
+        <button onclick="checkWord()">Submit</button>
+        <p id="result-message"></p>
+    </div>
+    <audio id="correct-sound" src="correct.mp3"></audio>
+    <audio id="wrong-sound" src="wrong.mp3"></audio>
+    <script>
+        const words = ["apple", "banana", "grape", "orange", "lemon", "peach"];
+        let currentWord = words[Math.floor(Math.random() * words.length)];
+        let scrambledWord = currentWord.split('').sort(() => Math.random() - 0.5).join('');
+
+        document.getElementById("scrambled-word").innerText = scrambledWord;
+
+        function checkWord() {
+            let userGuess = document.getElementById("user-input").value.toLowerCase();
+            let message = document.getElementById("result-message");
+            let correctSound = document.getElementById("correct-sound");
+            let wrongSound = document.getElementById("wrong-sound");
+
+            if (userGuess === currentWord) {
+                message.innerText = "Correct!";
+                message.style.animation = "correctAnimation 0.5s ease";
+                correctSound.play();
+            } else {
+                message.innerText = "Try Again!";
+                message.style.animation = "wrongAnimation 0.5s ease";
+                wrongSound.play();
+            }
+        }
+    </script>
+</body>
+</html>
